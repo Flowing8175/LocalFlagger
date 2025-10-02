@@ -2,6 +2,7 @@ package net.blosson.lflagger.checks;
 
 import net.blosson.lflagger.simulation.MovementSimulator;
 import net.blosson.lflagger.simulation.SimulatedPlayer;
+import net.blosson.lflagger.util.TpsTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
@@ -14,6 +15,7 @@ public class StrafeCheck extends Check {
 
     private final Map<UUID, Integer> violationLevels = new HashMap<>();
     private final MovementSimulator simulator = new MovementSimulator();
+    private final TpsTracker tpsTracker = TpsTracker.getInstance();
 
     public StrafeCheck() {
         super("Strafe", "Detects unnatural mid-air movement control.");
@@ -31,9 +33,13 @@ public class StrafeCheck extends Check {
             return;
         }
 
+        // Get TPS and Ping for compensation
+        double serverTps = tpsTracker.getTps();
+        int ping = tpsTracker.getPing();
+
         // Simulate the player's movement with no input to get a baseline for air friction decay.
         SimulatedPlayer simulatedPlayer = new SimulatedPlayer(player);
-        simulator.tick(simulatedPlayer, 0.0f, 0.0f); // No input
+        simulator.tick(simulatedPlayer, 0.0f, 0.0f, serverTps, ping); // No input
 
         // Get the horizontal speed of the actual and predicted movement
         Vec3d actualVel = player.getVelocity();

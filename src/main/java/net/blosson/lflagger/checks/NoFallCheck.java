@@ -11,7 +11,7 @@ public class NoFallCheck extends Check {
     // Inner class to store the state of a player between ticks
     private static class PlayerFallState {
         boolean wasOnGround;
-        float lastFallDistance;
+        double lastFallDistance; // Changed to double
 
         PlayerFallState(PlayerEntity player) {
             this.wasOnGround = player.isOnGround();
@@ -41,7 +41,7 @@ public class NoFallCheck extends Check {
         // Check if the player just landed
         if (!state.wasOnGround && isCurrentlyOnGround) {
             // A fall distance of > 3.0 is required for damage. We use 4.0 for a conservative check.
-            if (state.lastFallDistance > 4.0f) {
+            if (state.lastFallDistance > 4.0) { // Changed to double comparison
                 // The player fell far enough to take damage.
                 // A player's hurtTime becomes > 0 when they take damage.
                 // If it's 0, they likely negated the damage.

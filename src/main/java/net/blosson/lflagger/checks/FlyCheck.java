@@ -27,7 +27,7 @@ public class FlyCheck extends Check {
             return;
         }
 
-        if (player.isOnGround() || player.isClimbing() || player.isInsideWaterOrBubbleColumn()) {
+        if (player.isOnGround() || player.isClimbing() || player.isSubmergedInWater()) {
             violationLevels.put(player.getUuid(), 0);
             return;
         }

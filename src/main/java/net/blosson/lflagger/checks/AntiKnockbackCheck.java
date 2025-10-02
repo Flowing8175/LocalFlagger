@@ -1,5 +1,6 @@
 package net.blosson.lflagger.checks;
 
+import net.blosson.lflagger.util.DamageTiltTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 
@@ -37,7 +38,12 @@ public class AntiKnockbackCheck extends Check {
             }
 
             // A second piece of evidence: a genuine hit also causes a damage tilt effect.
-            boolean hasDamageTilt = player.getDamageTiltAngle() > 0;
+            // In modern versions, this is a packet, so we check our tracker.
+            if (MinecraftClient.getInstance().world == null) {
+                return; // Should not happen here, but good practice
+            }
+            long currentTick = MinecraftClient.getInstance().world.getTime();
+            boolean hasDamageTilt = DamageTiltTracker.getInstance().hasRecentTilt(player.getId(), currentTick);
 
             // Get the player's velocity magnitude at the moment of the hit.
             double velocityMagnitude = player.getVelocity().length();

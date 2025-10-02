@@ -18,12 +18,11 @@ repositories {
 }
 
 loom {
-	splitEnvironmentSourceSets()
-
-	mods {
-		"lflagger" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
+	runConfigs {
+		"client" {
+			client()
+			name "Minecraft Client"
+			source sourceSets.main
 		}
 	}
 }

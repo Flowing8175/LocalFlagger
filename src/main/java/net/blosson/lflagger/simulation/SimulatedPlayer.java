@@ -1,5 +1,6 @@
 package net.blosson.lflagger.simulation;
 
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -29,7 +30,7 @@ public class SimulatedPlayer {
     public boolean isInLava;
 
     // Physics attributes
-    public float fallDistance;
+    public double fallDistance; // Changed to double
     public Box boundingBox;
     public float speed; // Movement speed attribute
 
@@ -40,7 +41,7 @@ public class SimulatedPlayer {
     public SimulatedPlayer(PlayerEntity player) {
         // Capture initial state from the target player
         this.pos = player.getPos();
-        this.lastPos = new Vec3d(player.prevX, player.prevY, player.prevZ);
+        this.lastPos = new Vec3d(player.lastX, player.lastY, player.lastZ); // Updated from getPrevPos()
         this.velocity = player.getVelocity();
         this.onGround = player.isOnGround();
         this.lastOnGround = player.isOnGround();
@@ -52,10 +53,10 @@ public class SimulatedPlayer {
         this.isClimbing = player.isClimbing();
         this.isSwimming = player.isSwimming();
         this.isFlying = player.getAbilities().flying;
-        this.isInWater = player.isInsideWaterOrBubbleColumn();
+        this.isInWater = player.isSubmergedInWater(); // Updated from isInsideWaterOrBubbleColumn
         this.isInLava = player.isInLava();
         this.fallDistance = player.fallDistance;
         this.boundingBox = player.getBoundingBox();
-        this.speed = player.getSpeed();
+        this.speed = (float) player.getAttributeValue(EntityAttributes.MOVEMENT_SPEED); // Updated from getSpeed()
     }
 }
