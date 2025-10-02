@@ -1,15 +1,20 @@
 package net.blosson.lflagger.mixin;
 
 import net.blosson.lflagger.util.DamageTiltTracker;
+import net.blosson.lflagger.LocalFlaggerMod;
+import net.blosson.lflagger.util.DamageTiltTracker;
 import net.blosson.lflagger.util.TpsTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.DamageTiltS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.UUID;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
@@ -35,5 +40,16 @@ public class ClientPlayNetworkHandlerMixin {
         }
         long currentTick = MinecraftClient.getInstance().world.getTime();
         DamageTiltTracker.getInstance().recordTilt(packet.id(), currentTick);
+    }
+
+    /**
+     * REFACTOR: Injects into the handler for PlayerRemoveS2CPacket to clean up player state data.
+     * This is crucial to prevent a memory leak when players disconnect.
+     */
+    @Inject(method = "onPlayerRemove", at = @At("HEAD"))
+    private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci) {
+        for (UUID playerUuid : packet.getProfileIds()) {
+            LocalFlaggerMod.getInstance().getCheckManager().onPlayerLeave(playerUuid);
+        }
     }
 }
