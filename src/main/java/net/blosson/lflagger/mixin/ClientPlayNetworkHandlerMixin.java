@@ -48,7 +48,7 @@ public class ClientPlayNetworkHandlerMixin {
      */
     @Inject(method = "onPlayerRemove", at = @At("HEAD"))
     private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci) {
-        for (UUID playerUuid : packet.getProfileIds()) {
+        for (UUID playerUuid : packet.profileIds()) {
             LocalFlaggerMod.getInstance().getCheckManager().onPlayerLeave(playerUuid);
         }
     }
