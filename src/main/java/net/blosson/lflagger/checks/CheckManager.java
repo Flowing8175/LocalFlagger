@@ -1,6 +1,5 @@
 package net.blosson.lflagger.checks;
 
-import com.google.common.reflect.ClassPath;
 import net.blosson.lflagger.data.PlayerState;
 import net.blosson.lflagger.simulation.SimulatedPlayer;
 import net.blosson.lflagger.util.object.ObjectPool;
@@ -40,46 +39,25 @@ public class CheckManager {
     }
 
     /**
-     * Uses Guava's ClassPath reflection to find and instantiate all classes that extend {@link Check}
-     * in the specified package. This makes the system extensible, as new checks
-     * can be added without needing to register them manually.
+     * Manually registers all available checks. This approach is more robust than reflection-based
+     * classpath scanning, which can fail in non-standard environments like Android launchers.
      */
     private void loadChecks() {
-        final String packageName = "net.blosson.lflagger.checks.list";
         try {
-            // Use the context class loader, which is aware of mod classes in Fabric.
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            ClassPath classPath = ClassPath.from(classLoader);
+            // Manually add each check instance. This is simple, reliable, and avoids classpath scanning issues.
+            checks.add(new net.blosson.lflagger.checks.list.AntiKnockbackCheck());
+            checks.add(new net.blosson.lflagger.checks.list.FlyCheck());
+            checks.add(new net.blosson.lflagger.checks.list.NoFallCheck());
+            checks.add(new net.blosson.lflagger.checks.list.SpeedCheck());
+            checks.add(new net.blosson.lflagger.checks.list.StrafeCheck());
 
-            List<Class<?>> checkClasses = classPath.getTopLevelClasses(packageName)
-                    .stream()
-                    .map(classInfo -> {
-                        try {
-                            return classInfo.load();
-                        } catch (NoClassDefFoundError e) {
-                            // Log the error but don't crash; this can happen in some dev environments.
-                            System.err.println("Could not load class: " + classInfo.getName() + ". This may be expected in a development environment.");
-                            return null;
-                        }
-                    })
-                    .filter(java.util.Objects::nonNull) // Filter out classes that failed to load
-                    .collect(Collectors.toList());
-
-            for (Class<?> clazz : checkClasses) {
-                // Ensure the class is a concrete implementation of Check.
-                if (Check.class.isAssignableFrom(clazz) && !clazz.isInterface() && !java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
-                    try {
-                        Check check = (Check) clazz.getDeclaredConstructor().newInstance();
-                        checks.add(check);
-                        System.out.println("[LFlagger] Loaded check: " + check.getName());
-                    } catch (Exception e) {
-                        System.err.println("[LFlagger] Failed to instantiate check: " + clazz.getName());
-                        e.printStackTrace();
-                    }
-                }
+            // Log the successful loading of each check.
+            for (Check check : checks) {
+                System.out.println("[LFlagger] Loaded check: " + check.getName());
             }
-        } catch (IOException e) {
-            System.err.println("[LFlagger] Failed to scan for checks in package: " + packageName);
+        } catch (Exception e) {
+            // This will catch any unexpected errors during check instantiation.
+            System.err.println("[LFlagger] A critical error occurred while manually loading checks.");
             e.printStackTrace();
         }
     }
