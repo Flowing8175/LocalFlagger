@@ -90,6 +90,10 @@ public abstract class Check {
      * @param certainty The calculated certainty of the cheat detection, from 0.0 to 100.0.
      */
     protected void flag(PlayerEntity player, double certainty) {
+        // Do not flag if certainty is zero, as this can be triggered by vanilla behavior.
+        if (certainty <= 0) {
+            return;
+        }
         // Format the detection message as specified
         Text message = Text.literal("[LFlagger] ").formatted(Formatting.RED)
                 .append(Text.literal(player.getName().getString() + " ").formatted(Formatting.WHITE))
