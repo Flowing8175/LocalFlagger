@@ -22,8 +22,8 @@ public abstract class Check {
 
     private final String name;
     private final String description;
-    protected final ConfigManager configManager = ConfigManager.getInstance();
-    protected final MinecraftClient client = MinecraftClient.getInstance();
+    protected final ConfigManager configManager;
+    protected MinecraftClient client;
 
     /**
      * Constructs a new Check.
@@ -33,6 +33,8 @@ public abstract class Check {
     public Check(String name, String description) {
         this.name = name;
         this.description = description;
+        this.configManager = ConfigManager.getInstance();
+        this.client = MinecraftClient.getInstance();
     }
 
     /**
