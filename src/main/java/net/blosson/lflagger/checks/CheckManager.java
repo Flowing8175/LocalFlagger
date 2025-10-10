@@ -47,13 +47,26 @@ public class CheckManager {
     private void loadChecks() {
         final String packageName = "net.blosson.lflagger.checks.list";
         try {
-            List<Class<?>> checkClasses = ClassPath.from(CheckManager.class.getClassLoader())
-                    .getTopLevelClasses(packageName)
+            // Use the context class loader, which is aware of mod classes in Fabric.
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            ClassPath classPath = ClassPath.from(classLoader);
+
+            List<Class<?>> checkClasses = classPath.getTopLevelClasses(packageName)
                     .stream()
-                    .map(ClassPath.ClassInfo::load)
+                    .map(classInfo -> {
+                        try {
+                            return classInfo.load();
+                        } catch (NoClassDefFoundError e) {
+                            // Log the error but don't crash; this can happen in some dev environments.
+                            System.err.println("Could not load class: " + classInfo.getName() + ". This may be expected in a development environment.");
+                            return null;
+                        }
+                    })
+                    .filter(java.util.Objects::nonNull) // Filter out classes that failed to load
                     .collect(Collectors.toList());
 
             for (Class<?> clazz : checkClasses) {
+                // Ensure the class is a concrete implementation of Check.
                 if (Check.class.isAssignableFrom(clazz) && !clazz.isInterface() && !java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
                     try {
                         Check check = (Check) clazz.getDeclaredConstructor().newInstance();
