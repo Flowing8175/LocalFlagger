@@ -22,7 +22,7 @@ public class PlayerData {
 
     public PlayerData(PlayerEntity player, PlayerData lastData, float currentTps) {
         this.clientTimestamp = System.currentTimeMillis();
-        this.position = player.getPos();
+        this.position = player.getEntityPos();
         this.boundingBox = player.getBoundingBox();
         this.onGround = player.isOnGround();
         this.fallDistance = (float) player.fallDistance;
@@ -43,7 +43,7 @@ public class PlayerData {
             this.lastPosition = lastData.position;
             this.positionHistory = new LinkedList<>(lastData.positionHistory);
         } else {
-            this.lastPosition = player.getPos();
+            this.lastPosition = player.getEntityPos();
             this.positionHistory = new LinkedList<>();
         }
 

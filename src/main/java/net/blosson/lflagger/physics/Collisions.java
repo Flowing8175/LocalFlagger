@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 public class Collisions {
 
     public static Vec3d collide(PlayerEntity player, Vec3d velocity) {
-        World world = player.getWorld();
+        World world = player.getEntityWorld();
         Box playerBox = player.getBoundingBox();
         List<Box> collisionBoxes = StreamSupport.stream(world.getCollisions(player, playerBox.stretch(velocity)).spliterator(), false)
                 .flatMap(voxelShape -> voxelShape.getBoundingBoxes().stream())

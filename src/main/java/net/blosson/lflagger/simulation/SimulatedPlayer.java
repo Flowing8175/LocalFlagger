@@ -63,7 +63,7 @@ public class SimulatedPlayer {
      */
     public void reset(PlayerEntity player) {
         // Capture the player's current physical state
-        this.pos = player.getPos();
+        this.pos = player.getEntityPos();
         this.lastPos = new Vec3d(player.lastX, player.lastY, player.lastZ);
         this.velocity = player.getVelocity();
         this.boundingBox = player.getBoundingBox();

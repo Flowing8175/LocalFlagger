@@ -12,7 +12,7 @@ public class GroundSpoofCheck {
     public boolean check(PlayerEntity player, PlayerData data) {
         PredictionResult result = simulator.simulate(player, data);
 
-        double error = player.getPos().squaredDistanceTo(result.predictedPosition());
+        double error = player.getEntityPos().squaredDistanceTo(result.predictedPosition());
         double tolerance = result.tolerance();
 
         if (error > tolerance * tolerance) {

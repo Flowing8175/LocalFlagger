@@ -20,10 +20,10 @@ public class MovementSimulator {
         Vec3d extrapolatedPosition = extrapolatedResult.predictedPosition();
 
         // Calculate the ideal velocity vector for this tick
-        Vec3d idealVelocity = extrapolatedPosition.subtract(player.getPos());
+        Vec3d idealVelocity = extrapolatedPosition.subtract(player.getEntityPos());
 
         // Now, collide that ideal velocity with the world to get the realistic final position
-        Vec3d finalPosition = Collisions.collide(player, idealVelocity).add(player.getPos());
+        Vec3d finalPosition = Collisions.collide(player, idealVelocity).add(player.getEntityPos());
 
         double tolerance = uncertaintyManager.getTolerance(data);
 
