@@ -1,45 +1,50 @@
 package net.blosson.lflagger.physics;
 
 import net.blosson.lflagger.data.PlayerData;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.blosson.lflagger.data.PositionSnapshot;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Deque;
 
 public class PredictionEngineNormal extends PredictionEngine {
 
-    private static final double GRAVITY = 0.08;
-    private static final double JUMP_VELOCITY = 0.42F;
-
     @Override
-    protected Set<Vec3d> fetchPossibleStartTickVectors(ClientPlayerEntity player, PlayerData data) {
-        Set<Vec3d> velocities = new HashSet<>();
-        velocities.add(data.velocity);
-        return velocities;
-    }
-
-    @Override
-    protected List<Vec3d> applyInputsToVelocityPossibilities(ClientPlayerEntity player, PlayerData data, Set<Vec3d> startingVelocities) {
-        List<Vec3d> finalVelocities = new ArrayList<>();
-        float friction = player.getWorld().getBlockState(player.getSteppingPos()).getBlock().getSlipperiness() * 0.91f;
-
-        for (Vec3d velocity : startingVelocities) {
-            double dx = velocity.getX() * friction;
-            double dy = (velocity.getY() - GRAVITY) * 0.98;
-            double dz = velocity.getZ() * friction;
-
-            Vec3d baseMovement = new Vec3d(dx, dy, dz);
-
-            // TODO: Add player movement inputs (WASD)
-            finalVelocities.add(baseMovement);
-
-            if (data.onGround) {
-                finalVelocities.add(new Vec3d(baseMovement.x, JUMP_VELOCITY, baseMovement.z));
+    public PredictionResult predictNextPosition(PlayerData data) {
+        if (data.positionHistory.size() < 3) {
+            // Not enough data for acceleration, fall back to linear extrapolation or default
+            if (data.positionHistory.size() < 2) {
+                return new PredictionResult(data.position, 1.0);
             }
+            // Linear extrapolation
+            PositionSnapshot current = data.positionHistory.getLast();
+            PositionSnapshot previous = data.positionHistory.stream().skip(data.positionHistory.size() - 2).findFirst().get();
+            long timeDelta = current.timestamp() - previous.timestamp();
+            if (timeDelta == 0) return new PredictionResult(data.position, 1.0);
+            Vec3d velocity = current.position().subtract(previous.position()).multiply(1.0 / timeDelta);
+            long timeToPredict = System.currentTimeMillis() - current.timestamp();
+            Vec3d predictedPosition = current.position().add(velocity.multiply(timeToPredict));
+            return new PredictionResult(predictedPosition, 0.0);
         }
-        return finalVelocities;
+
+        // --- Acceleration Extrapolation Logic ---
+        PositionSnapshot current = data.positionHistory.getLast();
+        PositionSnapshot prev1 = data.positionHistory.stream().skip(data.positionHistory.size() - 2).findFirst().get();
+        PositionSnapshot prev2 = data.positionHistory.stream().skip(data.positionHistory.size() - 3).findFirst().get();
+
+        long dt1 = current.timestamp() - prev1.timestamp();
+        long dt2 = prev1.timestamp() - prev2.timestamp();
+        if (dt1 == 0 || dt2 == 0) return new PredictionResult(data.position, 1.0);
+
+        Vec3d v1 = current.position().subtract(prev1.position()).multiply(1.0 / dt1);
+        Vec3d v2 = prev1.position().subtract(prev2.position()).multiply(1.0 / dt2);
+
+        Vec3d acceleration = v1.subtract(v2).multiply(2.0 / (dt1 + dt2));
+
+        long timeToPredict = 50; // Predict one client tick (50ms) into the future
+        Vec3d predictedPosition = current.position()
+                .add(v1.multiply(timeToPredict))
+                .add(acceleration.multiply(0.5 * timeToPredict * timeToPredict));
+
+        return new PredictionResult(predictedPosition, 0.0);
     }
 }

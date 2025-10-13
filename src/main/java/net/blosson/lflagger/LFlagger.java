@@ -1,6 +1,8 @@
 package net.blosson.lflagger;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.blosson.lflagger.manager.TickManager;
+import net.blosson.lflagger.manager.UncertaintyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +12,6 @@ public class LFlagger implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("LFlagger initialized.");
+        LOGGER.info("LFlagger initialized. Managers will be engaged via mixins.");
     }
 }

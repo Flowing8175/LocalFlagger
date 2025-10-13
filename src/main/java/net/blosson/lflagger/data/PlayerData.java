@@ -1,46 +1,52 @@
 package net.blosson.lflagger.data;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Deque;
+import java.util.LinkedList;
+
 public class PlayerData {
 
-    public final double x, y, z;
-    public final double lastX, lastY, lastZ;
+    public final long clientTimestamp;
+    public final Vec3d position;
+    public final Vec3d lastPosition;
     public final Vec3d velocity;
     public final Box boundingBox;
     public final boolean onGround;
-    public final boolean isSprinting;
-    public final boolean isSneaking;
-    public final boolean isFlying;
-    public final boolean isSwimming;
-    public final boolean isClimbing;
     public final float fallDistance;
-    public final float flySpeed;
+    public final int serverPing;
+    public final float serverTps;
+    public final Deque<PositionSnapshot> positionHistory;
 
-    public PlayerData(ClientPlayerEntity player, PlayerData lastData) {
-        this.x = player.getX();
-        this.y = player.getY();
-        this.z = player.getZ();
-        if (lastData != null) {
-            this.lastX = lastData.x;
-            this.lastY = lastData.y;
-            this.lastZ = lastData.z;
-        } else {
-            this.lastX = player.getX();
-            this.lastY = player.getY();
-            this.lastZ = player.getZ();
-        }
+    public PlayerData(PlayerEntity player, PlayerData lastData, float currentTps) {
+        this.clientTimestamp = System.currentTimeMillis();
+        this.position = player.getPos();
         this.velocity = player.getVelocity();
         this.boundingBox = player.getBoundingBox();
         this.onGround = player.isOnGround();
-        this.isSprinting = player.isSprinting();
-        this.isSneaking = player.isSneaking();
-        this.isFlying = player.getAbilities().flying;
-        this.isSwimming = player.isSwimming();
-        this.isClimbing = player.isClimbing();
         this.fallDistance = (float) player.fallDistance;
-        this.flySpeed = player.getAbilities().getFlySpeed();
+        this.serverTps = currentTps;
+
+        if (player instanceof ClientPlayerEntity && ((ClientPlayerEntity) player).networkHandler != null && ((ClientPlayerEntity) player).networkHandler.getPlayerListEntry(player.getUuid()) != null) {
+            this.serverPing = ((ClientPlayerEntity) player).networkHandler.getPlayerListEntry(player.getUuid()).getLatency();
+        } else {
+            this.serverPing = 0;
+        }
+
+        if (lastData != null) {
+            this.lastPosition = lastData.position;
+            this.positionHistory = new LinkedList<>(lastData.positionHistory);
+        } else {
+            this.lastPosition = player.getPos();
+            this.positionHistory = new LinkedList<>();
+        }
+
+        this.positionHistory.add(new PositionSnapshot(this.clientTimestamp, this.position));
+        if (this.positionHistory.size() > 20) {
+            this.positionHistory.poll();
+        }
     }
 }

@@ -3,7 +3,8 @@
   "package": "net.blosson.lflagger.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ClientPlayerEntityMixin"
+    "OtherPlayerEntityMixin",
+    "ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
