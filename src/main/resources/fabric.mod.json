@@ -1,26 +1,27 @@
 {
-	"schemaVersion": 1,
-	"id": "lflagger",
-	"version": "${version}",
-	"name": "LFlagger",
-	"description": "A client-side cheat detection mod.",
-	"authors": [
-		"Jules"
-	],
-	"license": "CC0-1.0",
-	"environment": "client",
-	"entrypoints": {
-		"client": [
-			"net.blosson.lflagger.LocalFlaggerMod"
-		]
-	},
-	"mixins": [
-		"lflagger.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.17.2",
-		"minecraft": "~1.21.8",
-		"java": ">=21",
-		"fabric-api": "*"
-	}
+  "schemaVersion": 1,
+  "id": "lflagger",
+  "version": "${version}",
+  "name": "LFlagger",
+  "description": "A client-side cheat detection mod.",
+  "authors": [
+    "Jules"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/lflagger/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.blosson.lflagger.LFlagger"
+    ]
+  },
+  "mixins": [
+    "lflagger.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.3",
+    "fabric-api": "*",
+    "minecraft": "1.21.10"
+  }
 }
