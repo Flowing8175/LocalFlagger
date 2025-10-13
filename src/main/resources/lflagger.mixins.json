@@ -1,12 +1,9 @@
 {
   "required": true,
-  "minVersion": "0.8",
   "package": "net.blosson.lflagger.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
-    "MinecraftClientMixin"
+    "ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
