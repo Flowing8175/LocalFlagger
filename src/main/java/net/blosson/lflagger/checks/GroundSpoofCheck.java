@@ -3,13 +3,13 @@ package net.blosson.lflagger.checks;
 import net.blosson.lflagger.data.PlayerData;
 import net.blosson.lflagger.physics.MovementSimulator;
 import net.blosson.lflagger.physics.PredictionResult;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class GroundSpoofCheck {
 
     private final MovementSimulator simulator = new MovementSimulator();
 
-    public boolean check(ClientPlayerEntity player, PlayerData data) {
+    public boolean check(PlayerEntity player, PlayerData data) {
         PredictionResult result = simulator.simulate(player, data);
 
         double error = player.getPos().squaredDistanceTo(result.predictedPosition());

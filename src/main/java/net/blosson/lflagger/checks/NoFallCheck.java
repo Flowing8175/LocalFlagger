@@ -1,11 +1,11 @@
 package net.blosson.lflagger.checks;
 
 import net.blosson.lflagger.data.PlayerData;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class NoFallCheck {
 
-    public boolean check(ClientPlayerEntity player, PlayerData data, PlayerData lastData) {
+    public boolean check(PlayerEntity player, PlayerData data, PlayerData lastData) {
         if (lastData == null) {
             return false;
         }

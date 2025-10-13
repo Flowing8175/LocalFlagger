@@ -24,7 +24,6 @@ public class PlayerData {
     public PlayerData(PlayerEntity player, PlayerData lastData, float currentTps) {
         this.clientTimestamp = System.currentTimeMillis();
         this.position = player.getPos();
-        this.velocity = player.getVelocity();
         this.boundingBox = player.getBoundingBox();
         this.onGround = player.isOnGround();
         this.fallDistance = (float) player.fallDistance;
@@ -42,6 +41,16 @@ public class PlayerData {
         } else {
             this.lastPosition = player.getPos();
             this.positionHistory = new LinkedList<>();
+        }
+
+        if (player instanceof ClientPlayerEntity) {
+            this.velocity = player.getVelocity();
+        } else {
+            if (lastData != null && this.clientTimestamp > lastData.clientTimestamp) {
+                this.velocity = this.position.subtract(lastData.position).multiply(1000.0 / (this.clientTimestamp - lastData.clientTimestamp));
+            } else {
+                this.velocity = Vec3d.ZERO;
+            }
         }
 
         this.positionHistory.add(new PositionSnapshot(this.clientTimestamp, this.position));
