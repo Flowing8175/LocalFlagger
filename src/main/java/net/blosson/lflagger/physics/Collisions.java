@@ -1,6 +1,6 @@
 package net.blosson.lflagger.physics;
 
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
@@ -11,7 +11,7 @@ import java.util.stream.StreamSupport;
 
 public class Collisions {
 
-    public static Vec3d collide(ClientPlayerEntity player, Vec3d velocity) {
+    public static Vec3d collide(PlayerEntity player, Vec3d velocity) {
         World world = player.getWorld();
         Box playerBox = player.getBoundingBox();
         List<Box> collisionBoxes = StreamSupport.stream(world.getCollisions(player, playerBox.stretch(velocity)).spliterator(), false)
