@@ -1,2 +1,0 @@
-# LocalFlagger
-FAILURE SHIT PROJECT
