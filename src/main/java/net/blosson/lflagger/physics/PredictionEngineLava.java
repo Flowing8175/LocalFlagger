@@ -10,12 +10,15 @@ public class PredictionEngineLava extends PredictionEngine {
 
     @Override
     public PredictionResult predictNextPosition(PlayerData data) {
-        if (data.positionHistory.isEmpty()) {
+        if (data.positionHistory.size() < 2) {
             return new PredictionResult(data.position, 1.0);
         }
 
         // Apply lava physics
-        Vec3d velocity = data.velocity;
+        long timeDelta = data.clientTimestamp - data.positionHistory.getLast().timestamp();
+        if (timeDelta == 0) return new PredictionResult(data.position, 1.0);
+        Vec3d velocity = data.position.subtract(data.positionHistory.getLast().position()).multiply(1000.0 / timeDelta);
+
         double dx = velocity.getX() * LAVA_DRAG;
         double dy = velocity.getY() * LAVA_DRAG;
         double dz = velocity.getZ() * LAVA_DRAG;

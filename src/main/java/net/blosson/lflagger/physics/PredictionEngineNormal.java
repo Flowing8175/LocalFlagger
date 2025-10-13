@@ -20,9 +20,9 @@ public class PredictionEngineNormal extends PredictionEngine {
             PositionSnapshot previous = data.positionHistory.stream().skip(data.positionHistory.size() - 2).findFirst().get();
             long timeDelta = current.timestamp() - previous.timestamp();
             if (timeDelta == 0) return new PredictionResult(data.position, 1.0);
-            Vec3d velocity = current.position().subtract(previous.position()).multiply(1.0 / timeDelta);
+            Vec3d velocity = current.position().subtract(previous.position()).multiply(1000.0 / timeDelta);
             long timeToPredict = System.currentTimeMillis() - current.timestamp();
-            Vec3d predictedPosition = current.position().add(velocity.multiply(timeToPredict));
+            Vec3d predictedPosition = current.position().add(velocity.multiply(timeToPredict / 1000.0));
             return new PredictionResult(predictedPosition, 0.0);
         }
 
@@ -35,12 +35,12 @@ public class PredictionEngineNormal extends PredictionEngine {
         long dt2 = prev1.timestamp() - prev2.timestamp();
         if (dt1 == 0 || dt2 == 0) return new PredictionResult(data.position, 1.0);
 
-        Vec3d v1 = current.position().subtract(prev1.position()).multiply(1.0 / dt1);
-        Vec3d v2 = prev1.position().subtract(prev2.position()).multiply(1.0 / dt2);
+        Vec3d v1 = current.position().subtract(prev1.position()).multiply(1000.0 / dt1);
+        Vec3d v2 = prev1.position().subtract(prev2.position()).multiply(1000.0 / dt2);
 
         Vec3d acceleration = v1.subtract(v2).multiply(2.0 / (dt1 + dt2));
 
-        long timeToPredict = 50; // Predict one client tick (50ms) into the future
+        double timeToPredict = 50 / 1000.0; // Predict one client tick (50ms) into the future
         Vec3d predictedPosition = current.position()
                 .add(v1.multiply(timeToPredict))
                 .add(acceleration.multiply(0.5 * timeToPredict * timeToPredict));

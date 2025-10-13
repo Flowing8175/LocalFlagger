@@ -13,7 +13,6 @@ public class PlayerData {
     public final long clientTimestamp;
     public final Vec3d position;
     public final Vec3d lastPosition;
-    public final Vec3d velocity;
     public final Box boundingBox;
     public final boolean onGround;
     public final float fallDistance;
@@ -29,8 +28,13 @@ public class PlayerData {
         this.fallDistance = (float) player.fallDistance;
         this.serverTps = currentTps;
 
-        if (player instanceof ClientPlayerEntity && ((ClientPlayerEntity) player).networkHandler != null && ((ClientPlayerEntity) player).networkHandler.getPlayerListEntry(player.getUuid()) != null) {
-            this.serverPing = ((ClientPlayerEntity) player).networkHandler.getPlayerListEntry(player.getUuid()).getLatency();
+        if (player instanceof ClientPlayerEntity) {
+            ClientPlayerEntity localPlayer = (ClientPlayerEntity) player;
+            if (localPlayer.networkHandler != null && localPlayer.networkHandler.getPlayerListEntry(localPlayer.getUuid()) != null) {
+                this.serverPing = localPlayer.networkHandler.getPlayerListEntry(localPlayer.getUuid()).getLatency();
+            } else {
+                this.serverPing = 0;
+            }
         } else {
             this.serverPing = 0;
         }
@@ -41,16 +45,6 @@ public class PlayerData {
         } else {
             this.lastPosition = player.getPos();
             this.positionHistory = new LinkedList<>();
-        }
-
-        if (player instanceof ClientPlayerEntity) {
-            this.velocity = player.getVelocity();
-        } else {
-            if (lastData != null && this.clientTimestamp > lastData.clientTimestamp) {
-                this.velocity = this.position.subtract(lastData.position).multiply(1000.0 / (this.clientTimestamp - lastData.clientTimestamp));
-            } else {
-                this.velocity = Vec3d.ZERO;
-            }
         }
 
         this.positionHistory.add(new PositionSnapshot(this.clientTimestamp, this.position));
