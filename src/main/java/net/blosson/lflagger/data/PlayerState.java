@@ -1,6 +1,7 @@
 package net.blosson.lflagger.data;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,17 +34,6 @@ public class PlayerState {
     /** The player's hurt time from the previous tick. Used by AntiKnockbackCheck. */
     public int lastHurtTime;
 
-    /**
-     * Constructs a new PlayerState object, capturing the initial state from the player entity.
-     * @param player The player this state object belongs to.
-     */
-    public PlayerState(PlayerEntity player) {
-        this.player = player;
-        this.wasOnGround = player.isOnGround();
-        this.lastFallDistance = player.fallDistance;
-        this.lastHurtTime = player.hurtTime;
-        this.speedingTicks = 0;
-    }
 
     /**
      * @return The {@link PlayerEntity} this state belongs to.
@@ -124,9 +114,56 @@ public class PlayerState {
      * This method is called by the {@code CheckManager} at the end of each tick for the player,
      * ensuring that data for the next tick's checks (e.g., {@code wasOnGround}) is fresh.
      */
+    // REFACTOR: Added fields to track position history for velocity calculation.
+    /** The player's position in the last tick. */
+    public Vec3d lastPosition;
+    /** The timestamp of the last tick update, for calculating time deltas. */
+    public long lastTickTime;
+
+    /**
+     * Constructs a new PlayerState object, capturing the initial state from the player entity.
+     * @param player The player this state object belongs to.
+     */
+    public PlayerState(PlayerEntity player) {
+        this.player = player;
+        this.wasOnGround = player.isOnGround();
+        this.lastFallDistance = player.fallDistance;
+        this.lastHurtTime = player.hurtTime;
+        this.speedingTicks = 0;
+        // Initialize historical data
+        this.lastPosition = player.getEntityPos();
+        this.lastTickTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Calculates the player's velocity based on the change in position since the last tick.
+     * This is crucial for checks on remote players where {@code getVelocity()} is unreliable.
+     * @return The calculated velocity as a {@link Vec3d}. Returns a zero vector if the time delta is zero.
+     */
+    public Vec3d getCalculatedVelocity() {
+        long timeDelta = System.currentTimeMillis() - lastTickTime;
+        if (timeDelta > 0) {
+            Vec3d currentPos = player.getEntityPos();
+            return new Vec3d(
+                (currentPos.x - lastPosition.x) * 1000.0 / timeDelta,
+                (currentPos.y - lastPosition.y) * 1000.0 / timeDelta,
+                (currentPos.z - lastPosition.z) * 1000.0 / timeDelta
+            );
+        }
+        return Vec3d.ZERO; // Avoid division by zero
+    }
+
+    /**
+     * Updates the state data that needs to be tracked from one tick to the next.
+     * This method is called by the {@code CheckManager} at the end of each tick for the player,
+     * ensuring that data for the next tick's checks (e.g., {@code wasOnGround}) is fresh.
+     */
     public void update() {
         this.wasOnGround = player.isOnGround();
         this.lastFallDistance = player.fallDistance;
         this.lastHurtTime = player.hurtTime;
+        // Update historical data for the next tick's velocity calculation
+        this.lastPosition = player.getEntityPos();
+        this.lastTickTime = System.currentTimeMillis();
     }
 }

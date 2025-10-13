@@ -8,44 +8,45 @@ import net.blosson.lflagger.util.object.ObjectPool;
 import net.minecraft.entity.player.PlayerEntity;
 
 /**
- * REFACTOR: This check has been simplified to align with the new architecture.
- * - The PlayerFallState inner class and map have been removed.
- * - State is now managed by the central PlayerState object.
- * - Thresholds are now loaded from the config file.
- * - Redundant validation logic is removed.
+ * REFACTOR: This check is now part of the new, centralized check system.
+ * - It uses the injected PlayerState to get historical on-ground status.
+ * - It's configured via the main config file.
+ * - It no longer needs to manage its own state.
  */
 public class NoFallCheck extends Check {
 
-    private static final double MAX_CERTAINTY = 100.0;
-
     public NoFallCheck() {
-        super("NoFall", "Detects when a player ignores fall damage.");
+        super("NoFall", "Detects players surviving falls from impossible heights.");
     }
 
     @Override
-    public void tick(PlayerEntity player, PlayerState state, ObjectPool<SimulatedPlayer> simulatorPool) {
-        // The simulatorPool is not used in this check, which is perfectly fine.
+    public void tick(PlayerEntity player, PlayerState state, ObjectPool<SimulatedPlayer> pool) {
         if (!isEnabled() || isInvalid(player)) {
             return;
         }
 
-        boolean isCurrentlyOnGround = player.isOnGround();
-        ModConfig.NoFallCheckConfig config = configManager.getConfig().getNoFallCheck();
-
-        // Check if the player just landed after a fall.
-        if (!state.wasOnGround && isCurrentlyOnGround) {
-            // Check if they fell far enough to take damage, based on the configurable threshold.
-            if (state.lastFallDistance > config.minFallDistance) {
-                // A player's hurtTime becomes > 0 when they take damage.
-                // If it's 0 after a damaging fall, they likely negated the damage.
-                if (player.hurtTime == 0) {
-                    // The certainty is higher the further they fell.
-                    double certainty = (state.lastFallDistance - config.minFallDistance) * config.certaintyMultiplier;
-                    flag(player, Math.min(MAX_CERTAINTY, certainty));
+        // The core logic: if the player was not on the ground last tick but is now,
+        // and their fall distance was greater than the survivable limit, it's a potential flag.
+        if (state.wasOnGround && !player.isOnGround()) {
+            // Player has just started falling. Reset fall distance for accurate measurement.
+            state.lastFallDistance = 0;
+        } else if (!state.wasOnGround && player.isOnGround()) {
+            // Player has just landed.
+            ModConfig.NoFallCheckConfig config = configManager.getConfig().getNoFallCheck();
+            if (state.lastFallDistance > config.maxFallDistance) {
+                // The player "survived" a fall that should have caused damage or been fatal.
+                if (state.increaseViolationLevel(getName()) > config.violationThreshold) {
+                    flag(player, 100.0); // 100% certainty for this type of check
                 }
             }
         }
-        // The player's state (wasOnGround, lastFallDistance) is automatically updated in CheckManager after this.
+
+        // If the player is falling, update the fall distance.
+        if (!player.isOnGround()) {
+            // REFACTOR: Correctly accumulate fall distance. Velocity is negative when falling,
+            // so we subtract it to get a positive fall distance.
+            state.lastFallDistance -= player.getVelocity().y;
+        }
     }
 
     @Override

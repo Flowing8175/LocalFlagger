@@ -54,7 +54,8 @@ public class FlyCheck extends Check {
             // Run a simulation tick with NO player input to isolate the effect of gravity.
             SIMULATOR.tick(simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
 
-            Vec3d actualVelocity = player.getVelocity();
+            // REFACTOR: Use calculated velocity for remote players, direct velocity for local player.
+            Vec3d actualVelocity = player.isMainPlayer() ? player.getVelocity() : state.getCalculatedVelocity();
             Vec3d predictedVelocity = simulatedPlayer.velocity;
 
             double actualY = actualVelocity.y;

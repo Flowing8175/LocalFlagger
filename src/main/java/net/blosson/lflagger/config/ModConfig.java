@@ -68,12 +68,12 @@ public class ModConfig {
         /** If true, the NoFall check will be active. */
         @SerializedName("enabled")
         public boolean enabled = true;
-        /** The minimum fall distance required before a landing is checked for damage negation. Vanilla damage starts at 3.0. */
-        @SerializedName("min_fall_distance")
-        public double minFallDistance = 4.0;
-        /** A multiplier used to calculate the flag certainty based on how far the player fell. */
-        @SerializedName("certainty_multiplier")
-        public double certaintyMultiplier = 10.0;
+        /** The maximum distance a player can fall without taking damage. */
+        @SerializedName("max_fall_distance")
+        public double maxFallDistance = 3.0;
+        /** The number of violations a player must accumulate before a flag is triggered. */
+        @SerializedName("violation_threshold")
+        public int violationThreshold = 5;
     }
 
     /** Contains settings related to the Strafe check. */

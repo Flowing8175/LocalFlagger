@@ -37,7 +37,9 @@ public class SpeedCheck extends Check {
             return;
         }
 
-        double actualHorizontalSpeed = new Vec3d(player.getVelocity().x, 0, player.getVelocity().z).length();
+        // REFACTOR: Use calculated velocity for remote players, direct velocity for local player.
+        Vec3d velocity = player.isMainPlayer() ? player.getVelocity() : state.getCalculatedVelocity();
+        double actualHorizontalSpeed = new Vec3d(velocity.x, 0, velocity.z).length();
 
         SimulatedPlayer simulatedPlayer = simulatorPool.acquire();
         try {
