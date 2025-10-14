@@ -1,5 +1,8 @@
 package net.blosson.lflagger.simulation;
 
+import net.minecraft.block.Block;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -36,7 +39,7 @@ public class MovementSimulator {
      * @param serverTps The estimated server Ticks Per Second, used for lag compensation.
      * @param ping The player's ping in milliseconds. (Currently unused, reserved for future enhancements).
      */
-    public void tick(SimulatedPlayer simulatedPlayer, float forwardInput, float strafeInput, double serverTps, int ping) {
+    public void tick(PlayerEntity player, SimulatedPlayer simulatedPlayer, float forwardInput, float strafeInput, double serverTps, int ping) {
         // --- TPS/Ping Compensation ---
         // Calculate the time delta factor. If TPS is low, more time has passed per tick,
         // so we must scale physics calculations accordingly.
@@ -50,7 +53,7 @@ public class MovementSimulator {
         } else if (simulatedPlayer.isInLava) {
             simulateLavaMovement(simulatedPlayer, tpsFactor);
         } else {
-            simulateNormalMovement(simulatedPlayer, forwardInput, strafeInput, tpsFactor);
+            simulateNormalMovement(player, simulatedPlayer, forwardInput, strafeInput, tpsFactor);
         }
     }
 
@@ -62,19 +65,35 @@ public class MovementSimulator {
      * @param strafeInput The left/right input.
      * @param tpsFactor The TPS compensation factor.
      */
-    private void simulateNormalMovement(SimulatedPlayer player, float forwardInput, float strafeInput, double tpsFactor) {
+    private void simulateNormalMovement(PlayerEntity realPlayer, SimulatedPlayer player, float forwardInput, float strafeInput, double tpsFactor) {
         // --- This logic is modeled after Grim's MovementTickerPlayer and PredictionEngineNormal ---
 
-        // 1. Calculate ground friction. A full implementation would check the block beneath the player.
-        // We use the default slipperiness for now as a reasonable approximation.
-        // When airborne, friction is a fixed value.
-        float friction = player.onGround ? DEFAULT_SLIPPERINESS * GROUND_FRICTION_MULTIPLIER : GROUND_FRICTION_MULTIPLIER;
+        // 1. Calculate ground friction, taking the actual block into account.
+        Block groundBlock = realPlayer.getEntityWorld().getBlockState(realPlayer.getBlockPos().down()).getBlock();
+        float slipperiness = groundBlock.getSlipperiness();
+        float friction = player.onGround ? slipperiness * GROUND_FRICTION_MULTIPLIER : GROUND_FRICTION_MULTIPLIER;
 
-        // 2. Calculate the base travel vector from inputs.
-        // This is the acceleration the player is trying to generate.
+        // 2. Calculate the base travel vector from inputs, adjusted for status effects.
         float baseSpeed = player.speed;
+
+        // Apply Speed/Slowness effects
+        if (realPlayer.hasStatusEffect(StatusEffects.SPEED)) {
+            int amplifier = realPlayer.getStatusEffect(StatusEffects.SPEED).getAmplifier();
+            baseSpeed *= 1.0 + (0.2 * (amplifier + 1));
+        }
+        if (realPlayer.hasStatusEffect(StatusEffects.SLOWNESS)) {
+            int amplifier = realPlayer.getStatusEffect(StatusEffects.SLOWNESS).getAmplifier();
+            baseSpeed *= 1.0 - (0.15 * (amplifier + 1));
+        }
+
         if (player.isSprinting) {
             baseSpeed *= SPRINTING_MULTIPLIER;
+        }
+
+        // Apply Jump Boost effect to vertical movement
+        if (realPlayer.hasStatusEffect(StatusEffects.JUMP_BOOST) && !player.onGround) {
+            int amplifier = realPlayer.getStatusEffect(StatusEffects.JUMP_BOOST).getAmplifier();
+            player.velocity = player.velocity.add(0, (amplifier + 1) * 0.1, 0);
         }
 
         Vec3d travelVector = new Vec3d(strafeInput, 0, forwardInput);
