@@ -41,10 +41,10 @@ public class ModConfig {
         public boolean enabled = true;
         /** A lenient buffer added to predicted vertical movement to prevent false positives. */
         @SerializedName("vertical_leniency")
-        public double verticalLeniency = 0.1;
+        public double verticalLeniency = 0.05;
         /** The number of violations a player must accumulate before a flag is triggered. */
         @SerializedName("violation_threshold")
-        public int violationThreshold = 5;
+        public int violationThreshold = 10;
     }
 
     /** Contains settings related to the Speed check. */
@@ -52,15 +52,15 @@ public class ModConfig {
         /** If true, the Speed check will be active. */
         @SerializedName("enabled")
         public boolean enabled = true;
-        /** The lenient multiplier applied to the predicted max speed (e.g., 1.15 = 115%). */
+        /** The lenient multiplier applied to the predicted max speed (e.g., 1.05 = 105%). */
         @SerializedName("speed_multiplier_leniency")
-        public double speedMultiplierLeniency = 1.15;
+        public double speedMultiplierLeniency = 1.05;
         /** A small, flat speed buffer added to the max speed to account for minor inaccuracies. */
         @SerializedName("speed_flat_leniency")
-        public double speedFlatLeniency = 0.01;
+        public double speedFlatLeniency = 0.005;
         /** The number of consecutive ticks a player must be speeding to trigger a flag. */
         @SerializedName("violation_threshold")
-        public int violationThreshold = 60; // Default: 3 seconds
+        public int violationThreshold = 20; // Default: 1 second
     }
 
     /** Contains settings related to the NoFall check. */

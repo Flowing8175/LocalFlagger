@@ -39,7 +39,7 @@ public class FlyCheck extends Check {
         }
 
         if (player.isOnGround() || player.isClimbing() || player.isSubmergedInWater()) {
-            state.decreaseViolationLevel(getName(), 10); // Rapidly decrease violations when grounded/safe
+            state.decreaseViolationLevel(getName(), 1); // Decrease violations when grounded/safe
             return;
         }
 
@@ -52,18 +52,18 @@ public class FlyCheck extends Check {
             int ping = tpsTracker.getPing();
 
             // Run a simulation tick with NO player input to isolate the effect of gravity.
-            SIMULATOR.tick(simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
+            SIMULATOR.tick(player, simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
 
-            // REFACTOR: Use calculated velocity for remote players, direct velocity for local player.
+            // Use calculated velocity for remote players, direct velocity for local player.
             Vec3d actualVelocity = player.isMainPlayer() ? player.getVelocity() : state.getCalculatedVelocity();
             Vec3d predictedVelocity = simulatedPlayer.velocity;
 
             double actualY = actualVelocity.y;
             double predictedY = predictedVelocity.y;
 
-            // REFACTOR: Use leniency value from config
             ModConfig.FlyCheckConfig config = configManager.getConfig().getFlyCheck();
-            if (actualY > predictedY + config.verticalLeniency) {
+            // Check for both flying up and falling too slowly (slow fall)
+            if (actualY > predictedY + config.verticalLeniency || (actualY < predictedY && actualY > predictedY - config.verticalLeniency)) {
                 if (state.increaseViolationLevel(getName()) > config.violationThreshold) {
                     handleFlag(player, actualVelocity, predictedVelocity);
                 }
@@ -71,7 +71,6 @@ public class FlyCheck extends Check {
                 state.decreaseViolationLevel(getName());
             }
         } finally {
-            // REFACTOR: Ensure the simulated player is always released back to the pool.
             simulatorPool.release(simulatedPlayer);
         }
     }

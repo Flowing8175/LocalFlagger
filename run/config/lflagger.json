@@ -1,0 +1,28 @@
+{
+  "fly_check": {
+    "enabled": true,
+    "vertical_leniency": 0.05,
+    "violation_threshold": 10
+  },
+  "speed_check": {
+    "enabled": true,
+    "speed_multiplier_leniency": 1.05,
+    "speed_flat_leniency": 0.005,
+    "violation_threshold": 20
+  },
+  "no_fall_check": {
+    "enabled": true,
+    "max_fall_distance": 3.0,
+    "violation_threshold": 5
+  },
+  "strafe_check": {
+    "enabled": true,
+    "air_strafe_leniency": 0.01,
+    "violation_threshold": 10
+  },
+  "anti_knockback_check": {
+    "enabled": true,
+    "knockback_threshold": 0.05,
+    "assumed_vanilla_knockback": 0.4
+  }
+}
