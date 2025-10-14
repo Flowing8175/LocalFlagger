@@ -27,25 +27,33 @@ public class NoFallCheck extends Check {
 
         // The core logic: if the player was not on the ground last tick but is now,
         // and their fall distance was greater than the survivable limit, it's a potential flag.
-        if (state.wasOnGround && !player.isOnGround()) {
-            // Player has just started falling. Reset fall distance for accurate measurement.
-            state.lastFallDistance = 0;
-        } else if (!state.wasOnGround && player.isOnGround()) {
-            // Player has just landed.
+        if (!state.wasOnGround && player.isOnGround()) {
+            // Player has just landed. Check the fall distance.
             ModConfig.NoFallCheckConfig config = configManager.getConfig().getNoFallCheck();
-            if (state.lastFallDistance > config.maxFallDistance) {
+            double fallDistance = player.isMainPlayer() ? player.fallDistance : state.lastFallDistance;
+
+            if (fallDistance > config.maxFallDistance) {
                 // The player "survived" a fall that should have caused damage or been fatal.
                 if (state.increaseViolationLevel(getName()) > config.violationThreshold) {
                     flag(player, 100.0); // 100% certainty for this type of check
                 }
             }
-        }
-
-        // If the player is falling, update the fall distance.
-        if (!player.isOnGround()) {
-            // REFACTOR: Correctly accumulate fall distance. Velocity is negative when falling,
-            // so we subtract it to get a positive fall distance.
-            state.lastFallDistance -= player.getVelocity().y;
+            // Reset fall distance after landing
+            state.lastFallDistance = 0;
+        } else if (!player.isOnGround()) {
+            // If the player is in the air, accumulate fall distance.
+            // For the local player, we trust player.fallDistance. For others, we calculate it.
+            if (player.isMainPlayer()) {
+                state.lastFallDistance = player.fallDistance;
+            } else {
+                // Velocity is negative when falling, so we subtract it to get a positive fall distance.
+                if (player.getVelocity().y < 0) {
+                    state.lastFallDistance -= player.getVelocity().y;
+                }
+            }
+        } else {
+            // If on ground, reset fall distance.
+            state.lastFallDistance = 0;
         }
     }
 
