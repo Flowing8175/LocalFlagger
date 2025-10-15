@@ -54,20 +54,25 @@ public class FlyCheck extends Check {
             // Run a simulation tick with NO player input to isolate the effect of gravity.
             SIMULATOR.tick(player, simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
 
-            // Use calculated velocity for remote players, direct velocity for local player.
-            Vec3d actualVelocity = player.isMainPlayer() ? player.getVelocity() : state.getCalculatedVelocity();
+            // DEBUG: Use calculated velocity for all players to ensure consistent logic.
+            Vec3d actualVelocity = state.getCalculatedVelocity();
             Vec3d predictedVelocity = simulatedPlayer.velocity;
 
             double actualY = actualVelocity.y;
             double predictedY = predictedVelocity.y;
 
             ModConfig.FlyCheckConfig config = configManager.getConfig().getFlyCheck();
-            // Check for both flying up and falling too slowly (slow fall)
-            if (actualY > predictedY + config.verticalLeniency || (actualY < predictedY && actualY > predictedY - config.verticalLeniency)) {
+            // With the new Grim-based physics, the prediction is more reliable.
+            // The main check is now a simple comparison of vertical velocities.
+            double verticalDifference = actualVelocity.y - predictedVelocity.y;
+
+            // If the player moved up significantly more than predicted, it's a flag.
+            if (verticalDifference > config.verticalLeniency) {
                 if (state.increaseViolationLevel(getName()) > config.violationThreshold) {
                     handleFlag(player, actualVelocity, predictedVelocity);
                 }
             } else {
+                // Decay violations if the movement is legitimate.
                 state.decreaseViolationLevel(getName());
             }
         } finally {
