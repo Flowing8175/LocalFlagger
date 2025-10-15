@@ -119,6 +119,8 @@ public class PlayerState {
     public Vec3d lastPosition;
     /** The timestamp of the last tick update, for calculating time deltas. */
     public long lastTickTime;
+    public PlayerData lastPlayerData;
+    public Vec3d lastVelocity;
 
     /**
      * Constructs a new PlayerState object, capturing the initial state from the player entity.
@@ -133,6 +135,8 @@ public class PlayerState {
         // Initialize historical data
         this.lastPosition = player.getEntityPos();
         this.lastTickTime = System.currentTimeMillis();
+        this.lastPlayerData = null;
+        this.lastVelocity = Vec3d.ZERO;
     }
 
     /**

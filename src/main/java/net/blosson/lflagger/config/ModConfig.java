@@ -28,11 +28,15 @@ public class ModConfig {
     @SerializedName("anti_knockback_check")
     private final AntiKnockbackCheckConfig antiKnockbackCheck = new AntiKnockbackCheckConfig();
 
+    @SerializedName("movement_check")
+    private final MovementCheckConfig movementCheck = new MovementCheckConfig();
+
     public FlyCheckConfig getFlyCheck() { return flyCheck; }
     public SpeedCheckConfig getSpeedCheck() { return speedCheck; }
     public NoFallCheckConfig getNoFallCheck() { return noFallCheck; }
     public StrafeCheckConfig getStrafeCheck() { return strafeCheck; }
     public AntiKnockbackCheckConfig getAntiKnockbackCheck() { return antiKnockbackCheck; }
+    public MovementCheckConfig getMovementCheck() { return movementCheck; }
 
     /** Contains settings related to the Fly check. */
     public static class FlyCheckConfig {
@@ -100,5 +104,15 @@ public class ModConfig {
         /** The assumed velocity magnitude of a standard vanilla knockback, used for calculating certainty. */
         @SerializedName("assumed_vanilla_knockback")
         public double assumedVanillaKnockback = 0.4;
+    }
+
+    /** Contains settings related to the Movement check. */
+    public static class MovementCheckConfig {
+        /** If true, the Movement check will be active. */
+        @SerializedName("enabled")
+        public boolean enabled = true;
+        /** The threshold for the distance between predicted and actual velocity. */
+        @SerializedName("distance_threshold")
+        public double distanceThreshold = 1.0;
     }
 }

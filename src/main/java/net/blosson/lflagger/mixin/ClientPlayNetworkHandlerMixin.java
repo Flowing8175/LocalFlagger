@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 
-import net.blosson.lflagger.LocalFlaggerMod;
+import net.blosson.lflagger.LFlagger;
 import net.blosson.lflagger.checks.CheckManager;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 
@@ -37,7 +37,7 @@ public class ClientPlayNetworkHandlerMixin {
      */
     @Inject(method = "onPlayerRemove", at = @At("TAIL"))
     private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci) {
-        CheckManager checkManager = LocalFlaggerMod.getInstance().getCheckManager();
+        CheckManager checkManager = LFlagger.getInstance().getCheckManager();
         if (checkManager != null) {
             for (UUID playerUuid : packet.profileIds()) {
                 checkManager.onPlayerLeave(playerUuid);
