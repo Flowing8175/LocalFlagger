@@ -50,6 +50,7 @@ public class CheckManager {
             checks.add(new net.blosson.lflagger.checks.list.NoFallCheck());
             checks.add(new net.blosson.lflagger.checks.list.SpeedCheck());
             checks.add(new net.blosson.lflagger.checks.list.StrafeCheck());
+            checks.add(new net.blosson.lflagger.checks.list.MovementCheck());
 
             // Log the successful loading of each check.
             for (Check check : checks) {

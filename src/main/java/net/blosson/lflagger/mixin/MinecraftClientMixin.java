@@ -1,6 +1,6 @@
 package net.blosson.lflagger.mixin;
 
-import net.blosson.lflagger.LocalFlaggerMod;
+import net.blosson.lflagger.LFlagger;
 import net.blosson.lflagger.checks.CheckManager;
 import net.blosson.lflagger.util.DamageTiltTracker;
 import net.minecraft.client.MinecraftClient;
@@ -23,7 +23,7 @@ public class MinecraftClientMixin {
      */
     @Inject(method = "tick", at = @At("TAIL"))
     private void onClientTick(CallbackInfo ci) {
-        LocalFlaggerMod mod = LocalFlaggerMod.getInstance();
+        LFlagger mod = LFlagger.getInstance();
         if (mod == null) {
             return;
         }

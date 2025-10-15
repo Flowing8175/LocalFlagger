@@ -1,6 +1,7 @@
 package net.blosson.lflagger.physics;
 
 import net.blosson.lflagger.data.PlayerData;
+import net.blosson.lflagger.data.PlayerState;
 import net.blosson.lflagger.manager.UncertaintyManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
@@ -11,23 +12,10 @@ public class MovementSimulator {
     private final PredictionEngineWater waterEngine = new PredictionEngineWater();
     private final PredictionEngineLava lavaEngine = new PredictionEngineLava();
 
-    public PredictionResult simulate(PlayerEntity player, PlayerData data) {
+    public PredictionResult simulate(PlayerEntity player, PlayerState state) {
         UncertaintyManager uncertaintyManager = UncertaintyManager.getInstance();
         PredictionEngine engine = selectEngine(player);
-
-        // First, get the extrapolated, ideal position from the engine
-        PredictionResult extrapolatedResult = engine.predictNextPosition(data);
-        Vec3d extrapolatedPosition = extrapolatedResult.predictedPosition();
-
-        // Calculate the ideal velocity vector for this tick
-        Vec3d idealVelocity = extrapolatedPosition.subtract(player.getEntityPos());
-
-        // Now, collide that ideal velocity with the world to get the realistic final position
-        Vec3d finalPosition = Collisions.collide(player, idealVelocity).add(player.getEntityPos());
-
-        double tolerance = uncertaintyManager.getTolerance(data);
-
-        return new PredictionResult(finalPosition, tolerance);
+        return engine.guessBestMovement(player, state);
     }
 
     private PredictionEngine selectEngine(PlayerEntity player) {

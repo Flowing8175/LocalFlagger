@@ -1,5 +1,6 @@
 package net.blosson.lflagger.data;
 
+import net.blosson.lflagger.util.TpsTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
@@ -33,6 +34,7 @@ public class PlayerState {
 
     /** The player's hurt time from the previous tick. Used by AntiKnockbackCheck. */
     public int lastHurtTime;
+    public PlayerData playerData;
 
 
     /**
@@ -133,6 +135,7 @@ public class PlayerState {
         // Initialize historical data
         this.lastPosition = player.getEntityPos();
         this.lastTickTime = System.currentTimeMillis();
+        this.playerData = new PlayerData(player, null, 20.0f);
     }
 
     /**
@@ -165,5 +168,6 @@ public class PlayerState {
         // Update historical data for the next tick's velocity calculation
         this.lastPosition = player.getEntityPos();
         this.lastTickTime = System.currentTimeMillis();
+        this.playerData = new PlayerData(player, this.playerData, (float) TpsTracker.getInstance().getTps());
     }
 }

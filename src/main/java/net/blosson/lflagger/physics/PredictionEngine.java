@@ -1,6 +1,8 @@
 package net.blosson.lflagger.physics;
 
 import net.blosson.lflagger.data.PlayerData;
+import net.blosson.lflagger.data.PlayerState;
+import net.minecraft.entity.player.PlayerEntity;
 
 public abstract class PredictionEngine {
 
@@ -11,4 +13,8 @@ public abstract class PredictionEngine {
      * @return A PredictionResult containing the predicted position and the tolerance for error.
      */
     public abstract PredictionResult predictNextPosition(PlayerData data);
+
+    public PredictionResult guessBestMovement(PlayerEntity player, PlayerState state) {
+        return predictNextPosition(state.playerData);
+    }
 }
