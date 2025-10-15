@@ -59,21 +59,52 @@ public class MovementSimulator {
 
     /**
      * Simulates movement for a player under normal (on land or in air) conditions.
+     * This implementation correctly follows the Grim Anticheat physics model,
+     * ensuring momentum is preserved and forces are applied in the correct order.
      *
-     * @param player The player state to simulate.
-     * @param forwardInput The forward/backward input.
-     * @param strafeInput The left/right input.
+     * @param realPlayer The actual PlayerEntity, used to query status effects and world state.
+     * @param player The SimulatedPlayer object representing the player's state.
+     * @param forwardInput The player's forward/backward input.
+     * @param strafeInput The player's left/right input.
      * @param tpsFactor The TPS compensation factor.
      */
     private void simulateNormalMovement(PlayerEntity realPlayer, SimulatedPlayer player, float forwardInput, float strafeInput, double tpsFactor) {
-        // --- This logic is modeled after Grim's MovementTickerPlayer and PredictionEngineNormal ---
+        // --- Corrected Grim Anticheat Physics Implementation ---
 
-        // 1. Calculate ground friction, taking the actual block into account.
+        // 1. Calculate acceleration from player input, adjusted for status effects.
+        Vec3d travelVector = getTravelVector(realPlayer, player, forwardInput, strafeInput);
+        player.velocity = player.velocity.add(travelVector);
+
+        // 2. Apply gravity if airborne.
+        if (!player.onGround) {
+            player.velocity = player.velocity.subtract(0, BASE_GRAVITY * tpsFactor, 0);
+        }
+
+        // 3. Apply friction. Grim's model applies ground friction to X/Z and air drag to Y.
+        float groundFriction = getGroundFriction(realPlayer);
+        player.velocity = new Vec3d(
+            player.velocity.x * groundFriction,
+            player.velocity.y * BASE_AIR_FRICTION, // Air friction is always applied to Y.
+            player.velocity.z * groundFriction
+        );
+
+        // 4. Update position based on the final, calculated velocity.
+        player.pos = player.pos.add(player.velocity.multiply(tpsFactor));
+        player.boundingBox = player.boundingBox.offset(player.velocity.multiply(tpsFactor));
+    }
+
+    /**
+     * Calculates the friction of the block the player is standing on.
+     */
+    private float getGroundFriction(PlayerEntity realPlayer) {
         Block groundBlock = realPlayer.getEntityWorld().getBlockState(realPlayer.getBlockPos().down()).getBlock();
-        float slipperiness = groundBlock.getSlipperiness();
-        float friction = player.onGround ? slipperiness * GROUND_FRICTION_MULTIPLIER : GROUND_FRICTION_MULTIPLIER;
+        return groundBlock.getSlipperiness() * GROUND_FRICTION_MULTIPLIER;
+    }
 
-        // 2. Calculate the base travel vector from inputs, adjusted for status effects.
+    /**
+     * Calculates the acceleration vector from player input and status effects.
+     */
+    private Vec3d getTravelVector(PlayerEntity realPlayer, SimulatedPlayer player, float forwardInput, float strafeInput) {
         float baseSpeed = player.speed;
 
         // Apply Speed/Slowness effects
@@ -90,39 +121,11 @@ public class MovementSimulator {
             baseSpeed *= SPRINTING_MULTIPLIER;
         }
 
-        // Apply Jump Boost effect to vertical movement
-        if (realPlayer.hasStatusEffect(StatusEffects.JUMP_BOOST) && !player.onGround) {
-            int amplifier = realPlayer.getStatusEffect(StatusEffects.JUMP_BOOST).getAmplifier();
-            player.velocity = player.velocity.add(0, (amplifier + 1) * 0.1, 0);
-        }
-
         Vec3d travelVector = new Vec3d(strafeInput, 0, forwardInput);
-        // Normalize to prevent diagonal movement from being faster.
         if (travelVector.lengthSquared() > 1.0) {
             travelVector = travelVector.normalize();
         }
-        travelVector = travelVector.multiply(baseSpeed);
-
-        // 3. Apply gravity if airborne. This is scaled by the TPS factor.
-        if (!player.onGround) {
-            player.velocity = player.velocity.subtract(0, BASE_GRAVITY * tpsFactor, 0);
-        }
-
-        // 4. Add the acceleration from player input to the current velocity.
-        player.velocity = player.velocity.add(travelVector);
-
-        // 5. Apply end-of-tick friction.
-        // This simulates air and ground drag, slowing the player down over time.
-        player.velocity = new Vec3d(
-            player.velocity.x * friction,
-            player.velocity.y * BASE_AIR_FRICTION, // Vertical velocity has its own friction (air drag).
-            player.velocity.z * friction
-        );
-
-        // 6. Update the player's position based on the final calculated velocity.
-        // The final velocity is also scaled by the TPS factor to account for tick duration.
-        player.pos = player.pos.add(player.velocity.multiply(tpsFactor));
-        player.boundingBox = player.boundingBox.offset(player.velocity.multiply(tpsFactor));
+        return travelVector.multiply(baseSpeed);
     }
 
     /**

@@ -109,12 +109,6 @@ public class PlayerState {
         violationLevels.put(checkName, 0);
     }
 
-    /**
-     * Updates the state data that needs to be tracked from one tick to the next.
-     * This method is called by the {@code CheckManager} at the end of each tick for the player,
-     * ensuring that data for the next tick's checks (e.g., {@code wasOnGround}) is fresh.
-     */
-    // REFACTOR: Added fields to track position history for velocity calculation.
     /** The player's position in the last tick. */
     public Vec3d lastPosition;
     /** The timestamp of the last tick update, for calculating time deltas. */

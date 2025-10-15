@@ -62,12 +62,17 @@ public class FlyCheck extends Check {
             double predictedY = predictedVelocity.y;
 
             ModConfig.FlyCheckConfig config = configManager.getConfig().getFlyCheck();
-            // Check for both flying up and falling too slowly (slow fall)
-            if (actualY > predictedY + config.verticalLeniency || (actualY < predictedY && actualY > predictedY - config.verticalLeniency)) {
+            // With the new Grim-based physics, the prediction is more reliable.
+            // The main check is now a simple comparison of vertical velocities.
+            double verticalDifference = actualVelocity.y - predictedVelocity.y;
+
+            // If the player moved up significantly more than predicted, it's a flag.
+            if (verticalDifference > config.verticalLeniency) {
                 if (state.increaseViolationLevel(getName()) > config.violationThreshold) {
                     handleFlag(player, actualVelocity, predictedVelocity);
                 }
             } else {
+                // Decay violations if the movement is legitimate.
                 state.decreaseViolationLevel(getName());
             }
         } finally {
