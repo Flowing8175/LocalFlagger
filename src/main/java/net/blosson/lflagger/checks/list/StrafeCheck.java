@@ -48,7 +48,7 @@ public class StrafeCheck extends Check {
             int ping = tpsTracker.getPing();
 
             // Simulate the player's movement with no input to get a baseline for air friction decay.
-            SIMULATOR.tick(player, simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
+            SIMULATOR.simulate(player, simulatedPlayer, 0.0f, 0.0f);
 
             Vec3d actualVel = player.getVelocity();
             Vec3d predictedVel = simulatedPlayer.velocity;

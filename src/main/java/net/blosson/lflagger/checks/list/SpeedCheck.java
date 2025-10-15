@@ -44,13 +44,10 @@ public class SpeedCheck extends Check {
         SimulatedPlayer simulatedPlayer = simulatorPool.acquire();
         try {
             simulatedPlayer.reset(player);
-
-            // Get TPS and Ping for compensation
-            double serverTps = tpsTracker.getTps();
-            int ping = tpsTracker.getPing();
+            simulatedPlayer.velocity = Vec3d.ZERO; // Start from a neutral state
 
             // Simulate one tick with maximum forward input to get the max possible speed
-            SIMULATOR.tick(player, simulatedPlayer, SIMULATION_FORWARD_INPUT, SIMULATION_STRAFE_INPUT, serverTps, ping);
+            SIMULATOR.simulate(player, simulatedPlayer, SIMULATION_FORWARD_INPUT, SIMULATION_STRAFE_INPUT);
             double maxPredictedSpeed = new Vec3d(simulatedPlayer.velocity.x, 0, simulatedPlayer.velocity.z).length();
 
             // REFACTOR: Use leniency values from config

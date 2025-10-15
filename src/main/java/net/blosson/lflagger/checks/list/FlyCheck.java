@@ -52,7 +52,7 @@ public class FlyCheck extends Check {
             int ping = tpsTracker.getPing();
 
             // Run a simulation tick with NO player input to isolate the effect of gravity.
-            SIMULATOR.tick(player, simulatedPlayer, 0.0f, 0.0f, serverTps, ping);
+            SIMULATOR.simulate(player, simulatedPlayer, 0.0f, 0.0f);
 
             // Use calculated velocity for remote players, direct velocity for local player.
             Vec3d actualVelocity = player.isMainPlayer() ? player.getVelocity() : state.getCalculatedVelocity();

@@ -20,6 +20,7 @@ public class SimulatedPlayer {
     public Vec3d pos;
     public Vec3d lastPos;
     public Vec3d velocity;
+    public float yaw;
 
     // Movement state flags
     public boolean onGround;
@@ -37,6 +38,7 @@ public class SimulatedPlayer {
     public double fallDistance;
     public Box boundingBox;
     public float speed; // The player's base movement speed attribute
+    public java.util.Map<net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect>, net.minecraft.entity.effect.StatusEffectInstance> activeStatusEffects;
 
     /**
      * Default constructor for use with an {@link ObjectPool} factory.
@@ -86,5 +88,7 @@ public class SimulatedPlayer {
         // Capture physics attributes
         this.fallDistance = player.fallDistance;
         this.speed = (float) player.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+        this.yaw = player.getYaw();
+        this.activeStatusEffects = player.getActiveStatusEffects();
     }
 }
