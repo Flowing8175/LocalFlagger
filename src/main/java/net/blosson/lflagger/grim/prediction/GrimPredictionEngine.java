@@ -121,17 +121,21 @@ public class GrimPredictionEngine {
 
     protected Vec3d transformInputsToVector(PlayerEntity player, Vec3d theoreticalInput) {
         float speed = (float) player.getMovementSpeed();
-        if (player.isSprinting()) {
-            speed *= 1.3f;
-        }
 
         float forward = (float) theoreticalInput.z;
         float strafe = (float) theoreticalInput.x;
 
+        if (player.isSprinting()) {
+            forward *= 1.3f;
+            strafe *= 1.3f;
+        }
+
         float f = strafe * strafe + forward * forward;
         if (f >= 1.0E-4F) {
             f = GrimMath.sqrt(f);
-            if (f < 1.0F) f = 1.0F;
+            if (f < 1.0F) {
+                f = 1.0F;
+            }
             f = speed / f;
             strafe *= f;
             forward *= f;
@@ -140,8 +144,8 @@ public class GrimPredictionEngine {
             float sinYaw = GrimMath.sin(yawRad);
             float cosYaw = GrimMath.cos(yawRad);
 
-            double x = (double)(strafe * cosYaw - forward * sinYaw);
-            double z = (double)(forward * cosYaw + strafe * sinYaw);
+            double x = (strafe * cosYaw - forward * sinYaw);
+            double z = (forward * cosYaw + strafe * sinYaw);
             return new Vec3d(x, 0.0, z);
         }
         return Vec3d.ZERO;
