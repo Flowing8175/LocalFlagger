@@ -5,6 +5,7 @@ import net.blosson.lflagger.util.grim.GrimMath;
 import net.blosson.lflagger.util.grim.JumpPower;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SlimeBlock;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -120,35 +121,28 @@ public class GrimPredictionEngine {
     }
 
     protected Vec3d transformInputsToVector(PlayerEntity player, Vec3d theoreticalInput) {
-        float speed = (float) player.getMovementSpeed();
-
+        float moveSpeed = (float) player.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
         float forward = (float) theoreticalInput.z;
         float strafe = (float) theoreticalInput.x;
 
         if (player.isSprinting()) {
-            forward *= 1.3f;
-            strafe *= 1.3f;
+            moveSpeed *= 1.3f;
         }
 
-        float f = strafe * strafe + forward * forward;
-        if (f >= 1.0E-4F) {
-            f = GrimMath.sqrt(f);
-            if (f < 1.0F) {
-                f = 1.0F;
-            }
-            f = speed / f;
-            strafe *= f;
-            forward *= f;
-
-            float yawRad = player.getYaw() * 0.017453292F;
-            float sinYaw = GrimMath.sin(yawRad);
-            float cosYaw = GrimMath.cos(yawRad);
-
-            double x = (strafe * cosYaw - forward * sinYaw);
-            double z = (forward * cosYaw + strafe * sinYaw);
-            return new Vec3d(x, 0.0, z);
+        // This is a simplified version of Minecraft's input handling.
+        // A more faithful port would need to consider more factors.
+        Vec3d moveVector = new Vec3d(strafe, 0.0, forward);
+        if (moveVector.lengthSquared() > 1.0) {
+            moveVector = moveVector.normalize();
         }
-        return Vec3d.ZERO;
+
+        float yaw = player.getYaw();
+        float pitch = player.getPitch();
+
+        Vec3d rotatedVector = moveVector.rotateX((float) Math.toRadians(pitch));
+        rotatedVector = rotatedVector.rotateY((float) Math.toRadians(-yaw));
+
+        return rotatedVector.multiply(moveSpeed);
     }
 
     protected float getFriction(PlayerEntity player, BlockState blockBelow) {
