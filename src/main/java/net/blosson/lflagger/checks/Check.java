@@ -70,9 +70,9 @@ public abstract class Check {
      *         or in creative mode), {@code false} otherwise.
      */
     protected boolean isInvalid(PlayerEntity player) {
-        // Ignore the local player, players in creative/spectator mode, or players who are allowed to fly.
+        // Ignore players in creative/spectator mode, or players who are allowed to fly.
         if (client.player == null) return true;
-        return player.getUuid().equals(client.player.getUuid()) || player.getAbilities().allowFlying;
+        return player.getAbilities().allowFlying;
     }
 
     /**
