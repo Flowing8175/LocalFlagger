@@ -60,7 +60,7 @@ public class SpeedCheck extends Check {
             if (actualHorizontalSpeed > lenientMaxSpeed) {
                 state.speedingTicks++;
             } else {
-                state.speedingTicks = Math.max(0, state.speedingTicks - 1); // Decay violations
+                state.speedingTicks = 0; // Reset violations when speed is legal
             }
 
             if (state.speedingTicks > config.violationThreshold) {

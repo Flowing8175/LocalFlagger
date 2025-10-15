@@ -103,21 +103,22 @@ public class MovementSimulator {
         }
         travelVector = travelVector.multiply(baseSpeed);
 
-        // 3. Apply gravity if airborne. This is scaled by the TPS factor.
+        // 3. Add the acceleration from player input to the current velocity.
+        player.velocity = player.velocity.add(travelVector);
+
+        // 4. Apply gravity if airborne. This is scaled by the TPS factor.
         if (!player.onGround) {
             player.velocity = player.velocity.subtract(0, BASE_GRAVITY * tpsFactor, 0);
         }
-
-        // 4. Add the acceleration from player input to the current velocity.
-        player.velocity = player.velocity.add(travelVector);
 
         // 5. Apply end-of-tick friction.
         // This simulates air and ground drag, slowing the player down over time.
         player.velocity = new Vec3d(
             player.velocity.x * friction,
-            player.velocity.y * BASE_AIR_FRICTION, // Vertical velocity has its own friction (air drag).
+            player.velocity.y, // Y velocity is not affected by ground friction
             player.velocity.z * friction
         );
+        player.velocity = player.velocity.multiply(1.0, BASE_AIR_FRICTION, 1.0); // Apply air drag to Y
 
         // 6. Update the player's position based on the final calculated velocity.
         // The final velocity is also scaled by the TPS factor to account for tick duration.
