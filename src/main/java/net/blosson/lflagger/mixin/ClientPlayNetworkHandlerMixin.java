@@ -35,15 +35,10 @@ public class ClientPlayNetworkHandlerMixin {
      * @param packet The packet containing the UUIDs of the players who left.
      * @param ci     Callback info provided by Mixin.
      */
-    // @Inject(method = "onPlayerRemove", at = @At("TAIL"))
-    // private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci) {
-    //     CheckManager checkManager = LocalFlaggerMod.getInstance().getCheckManager();
-    //     if (checkManager != null) {
-    //         for (UUID playerUuid : packet.profileIds()) {
-    //             checkManager.onPlayerLeave(playerUuid);
-    //         }
-    //     }
-    // }
+    @Inject(method = "onPlayerRemove", at = @At("TAIL"))
+    private void onPlayerRemove(PlayerRemoveS2CPacket packet, CallbackInfo ci) {
+        LFlagger.getInstance().getCheckManager().onPlayerLeave(packet.profileIds().get(0));
+    }
 
     @Inject(method = "onPlayerPositionLook", at = @At("TAIL"))
     private void onPlayerPositionLook(PlayerPositionLookS2CPacket packet, CallbackInfo ci) {

@@ -21,20 +21,10 @@ public class MinecraftClientMixin {
      * Injects into the client's main tick loop to run all cheat checks.
      * This is the main driver for the cheat detection system.
      */
-    // @Inject(method = "tick", at = @At("TAIL"))
-    // private void onClientTick(CallbackInfo ci) {
-    //     // LocalFlaggerMod mod = LocalFlaggerMod.getInstance();
-    //     // if (mod == null) {
-    //     //     return;
-    //     // }
-
-    //     // CheckManager checkManager = mod.getCheckManager();
-    //     // if (checkManager != null && this.world != null) {
-    //     //     // Prune the damage tilt tracker to prevent memory leaks
-    //     //     DamageTiltTracker.getInstance().pruneOldEntries(this.world.getTime());
-
-    //     //     // Iterate over all players in the world and run checks for each one
-    //     //     this.world.getPlayers().forEach(checkManager::tick);
-    //     // }
-    // }
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void onClientTick(CallbackInfo ci) {
+        if (this.world != null) {
+            this.world.getPlayers().forEach(player -> LFlagger.getInstance().getCheckManager().tick(player));
+        }
+    }
 }
