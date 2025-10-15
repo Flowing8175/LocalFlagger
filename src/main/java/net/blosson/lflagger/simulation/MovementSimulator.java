@@ -75,9 +75,14 @@ public class MovementSimulator {
         Vec3d travelVector = getTravelVector(realPlayer, player, forwardInput, strafeInput);
         player.velocity = player.velocity.add(travelVector);
 
-        // 2. Apply gravity if airborne.
+        // 2. Apply gravity and Jump Boost if airborne.
         if (!player.onGround) {
             player.velocity = player.velocity.subtract(0, BASE_GRAVITY * tpsFactor, 0);
+            // Re-implement Jump Boost, as it's a critical vanilla mechanic.
+            if (realPlayer.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
+                int amplifier = realPlayer.getStatusEffect(StatusEffects.JUMP_BOOST).getAmplifier();
+                player.velocity = player.velocity.add(0, (amplifier + 1) * 0.1, 0);
+            }
         }
 
         // 3. Apply friction. Grim's model applies ground friction to X/Z and air drag to Y.
